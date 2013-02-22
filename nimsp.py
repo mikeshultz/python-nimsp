@@ -1,6 +1,7 @@
 import re
 import urllib
 import urllib2
+import httplib
 import unicodedata
 from xml.etree import ElementTree
 
@@ -127,8 +128,12 @@ class nimsp(object):
             return xml
         except urllib2.HTTPError, e:
             raise NimspApiError(e.read())
+        except urllib2.URLError, e:
+            raise NimspApiError(e.reason)
         except ValueError, e:
             raise NimspApiError('Invalid Response')
+        except httplib.BadStatusLine, e:
+            raise NimspApiError('Invalid HTTP status response')
 
     class candidates(object):
 
