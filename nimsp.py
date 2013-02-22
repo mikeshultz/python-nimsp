@@ -2,6 +2,7 @@ import re
 import urllib
 import urllib2
 import httplib
+import socket
 import unicodedata
 from xml.etree import ElementTree
 
@@ -10,6 +11,8 @@ __copyright__ = "Copyright (c) 2011 Sunlight Labs"
 __license__ = "BSD"
 __version__ = '0.3.4'
 
+# Timeout in seconds to wait for response from API
+TIMEOUT = None
 
 class NimspApiError(Exception):
     pass
@@ -119,7 +122,7 @@ class nimsp(object):
         try:
             request = urllib2.Request(url,
                                       headers={'User-Agent': nimsp.useragent})
-            response = urllib2.urlopen(request)
+            response = urllib2.urlopen(request, None, TIMEOUT)
             xml = ElementTree.fromstring(response.read())
 
             if xml.tag == 'error':
@@ -134,6 +137,8 @@ class nimsp(object):
             raise NimspApiError('Invalid Response')
         except httplib.BadStatusLine, e:
             raise NimspApiError('Invalid HTTP status response')
+        except socket.timeout, e:
+            raise NimspApiError('Request timed out')
 
     class candidates(object):
 
