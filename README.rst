@@ -31,8 +31,8 @@ Example Usage
 
    >>> from nimsp import nimsp
    >>> nimsp.apikey = 'YOUR_API_KEY'
-   >>> corte = nimsp.candidates.list(state='tx', year=2008, candidate_name='Corte Jr, Frank')[0]
-   >>> print "$%d" % corte.total_dollars
+   >>> corte = nimsp.candidates.list(state='tx', year=2008, candidate_name='Corte Jr, Frank')
+   >>> print "$%d" % corte.results[0].total_dollars
    $287372
-   >>> print corte.candidate_status
+   >>> print corte.results[0].candidate_status
    Won

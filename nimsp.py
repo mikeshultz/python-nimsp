@@ -9,7 +9,7 @@ from xml.etree import ElementTree
 __author__ = "Michael Stephens <mstephens@sunlightfoundation.com>"
 __copyright__ = "Copyright (c) 2011 Sunlight Labs"
 __license__ = "BSD"
-__version__ = '0.3.4'
+__version__ = '0.4.0'
 
 # Timeout in seconds to wait for response from API
 TIMEOUT = None
@@ -17,6 +17,12 @@ TIMEOUT = None
 class NimspApiError(Exception):
     pass
 
+class NimspApiResults(object):
+    def __init__(self, xml, data_object, xml_name):
+        results = []
+        for key, value in xml.attrib.items():
+            setattr(self, key, value)
+        self.results = [data_object(i) for i in xml.findall(xml_name)]
 
 class NimspApiObject(object):
 
@@ -95,6 +101,12 @@ class District(NimspApiObject):
     def __str__(self):
         return "%s %s" % (self.state_name, self.district)
 
+class Year(object):
+    def __init__(self, year):
+        self.year = int(year.attrib['year'])
+    def __str__(self):
+        return "%s" % self.year
+
 
 def strip_accents(s):
     if isinstance(s, unicode):
@@ -145,31 +157,31 @@ class nimsp(object):
         @staticmethod
         def list(**params):
             xml = nimsp._apicall('candidates.list', params)
-            return [Candidate(c) for c in xml.findall('candidate')]
+            return NimspApiResults(xml, Candidate, 'candidate')
 
         @staticmethod
         def sectors(candidate_id, **params):
             params['imsp_candidate_id'] = candidate_id
             xml = nimsp._apicall('candidates.sectors', params)
-            return [Sector(s) for s in xml.findall('candidate_sector')]
+            return NimspApiResults(xml, Sector, 'candidate_sector')
 
         @staticmethod
         def businesses(candidate_id, **params):
             params['imsp_candidate_id'] = candidate_id
             xml = nimsp._apicall('candidates.businesses', params)
-            return [Business(b) for b in xml.findall('candidate_business')]
+            return NimspApiResults(xml, Business, 'candidate_business')
 
         @staticmethod
         def industries(candidate_id, **params):
             params['imsp_candidate_id'] = candidate_id
             xml = nimsp._apicall('candidates.industries', params)
-            return [Industry(i) for i in xml.findall('candidate_industry')]
+            return NimspApiResults(xml, Industry, 'candidate_industry')
 
         @staticmethod
         def top_contributors(candidate_id, **params):
             params['imsp_candidate_id'] = candidate_id
             xml = nimsp._apicall('candidates.top_contributors', params)
-            return [Contributor(c) for c in xml.findall('top_contributor')]
+            return NimspApiResults(xml, Contributor, 'top_contributor')
 
     class states(object):
         class offices(object):
@@ -177,40 +189,36 @@ class nimsp(object):
             @staticmethod
             def list(**params):
                 xml = nimsp._apicall('states.offices', params)
-                return [Office(o) for o in xml.findall('state_office')]
+                return NimspApiResults(xml, Office, 'state_office')
 
             @staticmethod
             def businesses(**params):
                 xml = nimsp._apicall('states.offices.businesses', params)
-                return [Business(s) for s in
-                        xml.findall('state_offices_business')]
+                return NimspApiResults(xml, Business, 'state_offices_business')
 
             @staticmethod
             def industries(**params):
                 xml = nimsp._apicall('states.offices.industries', params)
-                return [Industry(i) for i in
-                        xml.findall('state_offices_industry')]
+                return NimspApiResults(xml, Industry, 'state_offices_industry')
 
             @staticmethod
             def districts(state, year, **params):
                 params['state'] = state
                 params['year'] = year
                 xml = nimsp._apicall('states.offices.districts', params)
-                return [District(d) for d in
-                        xml.findall('state_office_district')]
+                return NimspApiResults(xml, District, 'state_office_district')
 
             @staticmethod
             def sectors(**params):
                 xml = nimsp._apicall('states.offices.sectors', params)
-                return [Sector(s) for s in
-                        xml.findall('state_offices_sector')]
+                return NimspApiResults(xml, Sector, 'state_offices_sector')
 
         @staticmethod
         def top_contributors(state, year, **params):
             params['state'] = state
             params['year'] = year
             xml = nimsp._apicall('states.top_contributors', params)
-            return [Contributor(c) for c in xml.findall('top_contributor')]
+            return NimspApiResults(xml, Contributor, 'top_contributor')
 
     class elections(object):
         class state(object):
@@ -219,7 +227,7 @@ class nimsp(object):
             def list(**params):
                 xml = nimsp._apicall('base_level.elections.state.list',
                                      params)
-                return [State(s) for s in xml.findall('state_list')]
+                return NimspApiResults(xml, State, 'state_list')
 
         class year(object):
 
@@ -227,8 +235,7 @@ class nimsp(object):
             def list(**params):
                 xml = nimsp._apicall('base_level.elections.year.list',
                                      params)
-                return [int(y.attrib['year']) for y in
-                        xml.findall('year_list')]
+                return NimspApiResults(xml, Year, 'year_list')
 
         class industries(object):
 
@@ -236,4 +243,4 @@ class nimsp(object):
             def list(**params):
                 xml = nimsp._apicall('base_level.industries.list',
                                      params)
-                return [Industry(i) for i in xml.findall('business_detail')]
+                return NimspApiResults(xml, Industry, 'business_detail')
