@@ -4,7 +4,7 @@ from setuptools import setup
 long_description = open('README.rst').read()
 
 setup(name="nimsp",
-      version='0.3.4',
+      version='0.4.1',
       py_modules=["nimsp"],
       description="Library for interacting with the National Institute on Money in State Politics API",
       author="Michael Stephens",

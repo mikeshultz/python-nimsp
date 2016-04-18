@@ -9,10 +9,10 @@ from xml.etree import ElementTree
 __author__ = "Michael Stephens <mstephens@sunlightfoundation.com>"
 __copyright__ = "Copyright (c) 2011 Sunlight Labs"
 __license__ = "BSD"
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 # Timeout in seconds to wait for response from API
-TIMEOUT = None
+TIMEOUT = 15
 
 class NimspApiError(Exception):
     pass
@@ -59,6 +59,9 @@ class Candidate(NimspApiObject):
         return nimsp.candidates.top_contributor(self.imsp_candidate_id,
                                                 **params)
 
+    def contributions(self, **params):
+        return nimsp.candidates.contributions(self.imsp_candidate_id, **params)
+
 
 class Sector(NimspApiObject):
 
@@ -79,6 +82,11 @@ class Industry(NimspApiObject):
 
 
 class Contributor(NimspApiObject):
+
+    def __str__(self):
+        return self.contributor_name
+
+class Contribution(NimspApiObject):
 
     def __str__(self):
         return self.contributor_name
@@ -182,6 +190,12 @@ class nimsp(object):
             params['imsp_candidate_id'] = candidate_id
             xml = nimsp._apicall('candidates.top_contributors', params)
             return NimspApiResults(xml, Contributor, 'top_contributor')
+
+        @staticmethod
+        def contributions(candidate_id, **params):
+            params['imsp_candidate_id'] = candidate_id
+            xml = nimsp._apicall('candidates.contributions', params)
+            return NimspApiResults(xml, Contribution, 'contribution')
 
     class states(object):
         class offices(object):
